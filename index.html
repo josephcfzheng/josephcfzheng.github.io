@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub Pages 部署流程指南</title>
+<style>
+  :root {
+    --primary: #D4AF37;
+    --primary-dark: #AA8C2C;
+    --primary-light: #F4E8D4;
+    --bg-deep: #0D0D0D;
+    --bg-surface: #1C1C1E;
+    --bg-elevated: #2C2C2E;
+    --text-main: #F5F5F7;
+    --text-sub: #A0A0A5;
+    --border: #38383A;
+    --border-primary: rgba(212, 175, 55, 0.25);
+    --radius-card: 16px;
+    --radius-btn-cta: 24px;
+    --shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+    --shadow-panel: 0 2px 16px rgba(0, 0, 0, 0.4);
+    --shadow-glow: 0 0 0 1px rgba(212, 175, 55, 0.15), 0 4px 24px rgba(0, 0, 0, 0.6);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Noto Sans SC", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    color: var(--text-main);
+    background: var(--bg-deep);
+    line-height: 1.6;
+    padding: 48px 32px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* Print styles */
+  @media print {
+    body { background: white; color: #1a1a1a; padding: 24px; }
+    .klk-content-panel, .klk-content-panel--premium, .klk-action-panel {
+      background: #f8f8f8; border: 1px solid #ddd; box-shadow: none;
+    }
+    .step-number { background: var(--primary); color: #0D0D0D; }
+    code { background: #f0f0f0; color: #333; }
+    pre code { background: #f5f5f5; }
+    .no-print { display: none; }
+    a { color: #0066cc; }
+  }
+
+  /* Hero */
+  .hero {
+    text-align: center;
+    padding: 64px 0 48px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+  }
+  .hero-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: block;
+  }
+  .hero h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 8px;
+  }
+  .hero .subtitle {
+    font-size: 16px;
+    color: var(--text-sub);
+    max-width: 560px;
+    margin: 0 auto;
+  }
+  .hero .badge {
+    display: inline-block;
+    background: rgba(212, 175, 55, 0.12);
+    border: 1px solid var(--primary);
+    color: var(--primary-light);
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  /* Section Header */
+  .klk-section-header {
+    display: flex;
+    align-items: center;
+    margin-top: 48px;
+    margin-bottom: 24px;
+  }
+  .klk-section-header::before {
+    content: "";
+    display: inline-block;
+    width: 4px;
+    height: 28px;
+    background-color: var(--primary);
+    border-radius: 2px;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+  .klk-section-header h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  /* Content Panel */
+  .klk-content-panel {
+    background: var(--bg-surface);
+    border-radius: var(--radius-card);
+    border: 1px solid var(--border-primary);
+    padding: 24px;
+    box-shadow: var(--shadow-panel);
+    margin-bottom: 16px;
+  }
+  .klk-content-panel--premium {
+    background: linear-gradient(135deg, #1C1C1E 0%, #252116 100%);
+    border: 1px solid var(--primary);
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* Step */
+  .step {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    margin-bottom: 24px;
+  }
+  .step:last-child { margin-bottom: 0; }
+  .step-number {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #0D0D0D;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step-content { flex: 1; }
+  .step-content h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 4px;
+  }
+  .step-content p {
+    font-size: 14px;
+    color: var(--text-sub);
+    margin-bottom: 8px;
+  }
+
+  /* Code */
+  code {
+    background: var(--bg-elevated);
+    color: var(--primary-light);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+  }
+  pre {
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    margin: 12px 0;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-main);
+  }
+
+  /* List */
+  ul, ol {
+    padding-left: 20px;
+    margin: 8px 0;
+  }
+  li {
+    font-size: 14px;
+    color: var(--text-main);
+    margin-bottom: 4px;
+  }
+  li::marker { color: var(--primary); }
+
+  /* Info box */
+  .info-box {
+    background: rgba(212, 175, 55, 0.06);
+    border-left: 3px solid var(--primary);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+  }
+  .info-box p {
+    font-size: 13px;
+    color: var(--text-sub);
+  }
+  .info-box strong {
+    color: var(--primary-light);
+  }
+
+  /* Highlight */
+  .highlight-number {
+    font-size: 23px;
+    font-weight: 700;
+    color: var(--primary-light);
+  }
+
+  /* Grid */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 600px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  /* Card */
+  .info-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    padding: 20px;
+  }
+  .info-card h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary-light);
+    margin-bottom: 8px;
+  }
+  .info-card p {
+    font-size: 13px;
+    color: var(--text-sub);
+  }
+
+  /* Link */
+  a { color: var(--primary); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 48px 0 24px;
+    border-top: 1px solid var(--border);
+    margin-top: 48px;
+  }
+  .footer p {
+    font-size: 13px;
+    color: var(--text-sub);
+  }
+
+  /* Print button */
+  .print-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--primary);
+    color: #0D0D0D;
+    padding: 10px 24px;
+    border-radius: var(--radius-btn-cta);
+    font-weight: 600;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: all 0.2s ease;
+  }
+  .print-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+  }
+</style>
+</head>
+<body>
+
+  <!-- Hero -->
+  <div class="hero">
+    <span class="hero-icon">&#128640;</span>
+    <span class="badge">GitHub Pages</span>
+    <h1>静态 HTML 部署流程指南</h1>
+    <p class="subtitle">从本地 HTML 到全球 CDN 加速的免费部署，零成本上线你的前端项目</p>
+    <button class="print-btn no-print" onclick="window.print()">&#128424; 打印为 PDF</button>
+  </div>
+
+  <!-- Section: 为什么选择 GitHub Pages -->
+  <div class="klk-section-header">
+    <h2>为什么选择 GitHub Pages</h2>
+  </div>
+
+  <div class="grid-2">
+    <div class="info-card">
+      <h4>&#9889; 零成本</h4>
+      <p>完全免费，无流量上限，支持自定义域名和 HTTPS</p>
+    </div>
+    <div class="info-card">
+      <h4>&#127760; 全球 CDN</h4>
+      <p>基于 GitHub 全球边缘节点，访问速度极快</p>
+    </div>
+    <div class="info-card">
+      <h4>&#128264; 自动部署</h4>
+      <p>推送代码即上线，无需手动操作</p>
+    </div>
+    <div class="info-card">
+      <h4>&#128274; 免费 HTTPS</h4>
+      <p>自动配置 SSL 证书，全站加密访问</p>
+    </div>
+  </div>
+
+  <!-- Section: 部署流程 -->
+  <div class="klk-section-header">
+    <h2>部署流程（6 步完成）</h2>
+  </div>
+
+  <div class="klk-content-panel">
+
+    <!-- Step 1 -->
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <h3>创建 GitHub 仓库</h3>
+        <p>在 GitHub 上新建一个公开或私有仓库。仓库名将成为你的子域名。</p>
+        <pre><code># 推荐：使用你的用户名 + .github.io 作为仓库名
+# 例如：username.github.io
+
+# 或任意仓库名，启用 Pages 后访问路径为：
+# https://username.github.io/repository-name/</code></pre>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <h3>克隆仓库到本地</h3>
+        <p>将远程仓库克隆到本地工作目录。</p>
+        <pre><code>git clone https://github.com/YOUR_USERNAME/your-repo.git
+cd your-repo</code></pre>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <h3>放置 HTML 文件</h3>
+        <p>将你的 HTML 文件放入仓库根目录（或 <code>docs/</code> 目录）。</p>
+        <div class="info-box">
+          <p><strong>&#9432; 注意：</strong>主页必须命名为 <code>index.html</code>，否则 GitHub Pages 无法自动识别入口文件。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <h3>推送代码到远程</h3>
+        <p>提交并推送文件到 GitHub。</p>
+        <pre><code>git add .
+git commit -m "Initial deployment"
+git push origin main</code></pre>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <h3>启用 GitHub Pages</h3>
+        <p>在仓库的 Settings → Pages 页面：</p>
+        <ul>
+          <li><strong>Source</strong> 选择 <code>Deploy from a branch</code></li>
+          <li><strong>Branch</strong> 选择 <code>main</code>，根目录 <code>/ (root)</code></li>
+          <li>点击 <strong>Save</strong></li>
+        </ul>
+        <div class="info-box">
+          <p><strong>&#9989; 完成：</strong>等待 1-2 分钟，你的网站将可通过 <span class="highlight-number" style="font-size:14px">https://username.github.io/repository-name</span> 访问。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 6 -->
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <h3>（可选）绑定自定义域名</h3>
+        <p>购买域名后（推荐 Namecheap，约 $9/年），在仓库设置中添加：</p>
+        <pre><code># 1. 在仓库根目录创建 CNAME 文件
+echo "yourdomain.com" > CNAME
+
+# 2. 推送 CNAME 文件
+git add CNAME
+git commit -m "Add custom domain"
+git push
+
+# 3. 在 Settings → Pages → Custom domain 填入域名</code></pre>
+        <p style="margin-top:8px">同时在域名注册商处添加一条 CNAME 记录：<code>username.github.io</code></p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Section: 常用命令速查 -->
+  <div class="klk-section-header">
+    <h2>常用命令速查</h2>
+  </div>
+
+  <div class="klk-content-panel">
+    <div style="margin-bottom: 16px;">
+      <h3 style="font-size:16px;font-weight:600;color:var(--primary-light);margin-bottom:8px;">使用 gh CLI（推荐）</h3>
+      <pre><code># 创建仓库并启用 Pages
+gh repo create username.github.io --public --enable-pages
+
+# 克隆并推送
+gh repo clone username.github.io
+cd username.github.io
+# ... 放入 HTML ...
+git add . && git commit -m "deploy" && git push
+
+# 查看部署状态
+gh api repos/username/username.github.io/pages/builds --jq '.[].status'</code></pre>
+    </div>
+    <div>
+      <h3 style="font-size:16px;font-weight:600;color:var(--primary-light);margin-bottom:8px;">使用纯 git（无 gh）</h3>
+      <pre><code># 初始化裸仓库（已有文件时）
+git init
+git remote add origin https://github.com/username/repo.git
+git add . && git commit -m "init"
+git push -u origin main
+
+# 更新部署
+git add . && git commit -m "update" && git push</code></pre>
+    </div>
+  </div>
+
+  <!-- Section: 免费域名方案 -->
+  <div class="klk-section-header">
+    <h2>免费域名方案对比</h2>
+  </div>
+
+  <div class="klk-content-panel--premium">
+    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px;">
+      <div class="info-card" style="border-color: var(--primary);">
+        <h4>&#127775; GitHub Pages</h4>
+        <p style="font-size:14px;color:var(--text-main);font-weight:600;margin-bottom:4px;">username.github.io</p>
+        <p>完全免费 · 无限流量 · HTTPS</p>
+        <p style="margin-top:4px;"><span class="premium-badge" style="font-size:11px;">推荐</span></p>
+      </div>
+      <div class="info-card">
+        <h4>&#9729; Cloudflare Pages</h4>
+        <p style="font-size:14px;color:var(--text-main);font-weight:600;margin-bottom:4px;">project.pages.dev</p>
+        <p>全球 CDN · 免费 SSL · 需账号</p>
+      </div>
+      <div class="info-card">
+        <h4>&#128161; Vercel</h4>
+        <p style="font-size:14px;color:var(--text-main);font-weight:600;margin-bottom:4px;">project.vercel.app</p>
+        <p>自动部署 · 预览链接 · 需账号</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: 常见问题 -->
+  <div class="klk-section-header">
+    <h2>常见问题</h2>
+  </div>
+
+  <div class="klk-content-panel">
+    <div class="info-box" style="margin-bottom:12px;">
+      <p><strong>Q: 部署后页面是空白？</strong><br>A: 检查 <code>index.html</code> 是否在根目录，以及相对路径引用是否正确。GitHub Pages 的路径前缀是仓库名。</p>
+    </div>
+    <div class="info-box" style="margin-bottom:12px;">
+      <p><strong>Q: 多久能生效？</strong><br>A: 通常 1-2 分钟。可点击 Pages 设置中的 "Build and deployment" 查看构建日志。</p>
+    </div>
+    <div class="info-box">
+      <p><strong>Q: 可以部署多个项目吗？</strong><br>A: 可以。每个项目一个仓库，每个仓库独立启用 Pages。</p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>Luxury Banking Design System &middot; Royal Gold Theme</p>
+    <p style="margin-top:4px;">使用此设计系统创建 &middot; <span style="color:var(--primary);">&#9733;</span></p>
+  </div>
+
+</body>
+</html>
